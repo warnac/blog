@@ -59,7 +59,7 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        //
+        return view('posts.edit', compact('post'));
     }
 
     /**
@@ -67,7 +67,20 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        //
+        $request->merge([
+            'slug' => Str::slug($request->title),
+        ]);
+
+        $validatedData = $request->validate([
+            'title' => 'required|max:255',
+            'slug' => 'required|unique:posts,slug,' . $post->id . '|max:255',
+            'content' => 'required',
+            'status' => 'required|in:draft,publish',
+        ]);
+
+        $post->update($validatedData);
+
+        return redirect()->route('posts.index')->with('success', 'Post updated successfully.');
     }
 
     /**
