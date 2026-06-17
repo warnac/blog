@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -21,7 +22,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('posts.create');
     }
 
     /**
@@ -29,7 +30,20 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->merge([
+            'slug' => Str::slug($request->title),
+        ]);
+
+        $validatedData = $request->validate([
+            'title' => 'required|max:255',
+            'slug' => 'required|unique:posts,slug|max:255',
+            'content' => 'required',
+            'status' => 'required|in:draft,publish',
+        ]);
+
+        Post::create($validatedData);
+
+        return redirect()->route('posts.index')->with('success', 'Post created successfully.');
     }
 
     /**
